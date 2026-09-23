@@ -6,7 +6,8 @@ public enum StrokeKind
 {
     Card = 0,
     Stem = 1,
-    Billboard = 2
+    Billboard = 2,
+    Limb = 3
 }
 
 public static class Outline

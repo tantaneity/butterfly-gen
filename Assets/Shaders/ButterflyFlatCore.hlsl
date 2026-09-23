@@ -5,6 +5,7 @@
 
 #define KIND_CARD 0.5
 #define KIND_STEM 1.5
+#define KIND_BILLBOARD 2.5
 #define PROBE_STEP 0.002
 #define EDGE_ON_FLOOR 0.22
 #define EDGE_ON_RANGE 0.45
@@ -117,7 +118,7 @@ Varyings Vertex(Attributes input)
     {
         expandWS = TransformObjectToWorldDir(input.expandOS, false);
     }
-    else if (kind < KIND_STEM)
+    else if (kind < KIND_STEM || kind > KIND_BILLBOARD)
     {
         float3 tangentWS = TransformObjectToWorldDir(input.tangentOS.xyz, false);
         float3 toCamera = normalize(GetCameraPositionWS() - positionWS);
@@ -138,7 +139,7 @@ Varyings Vertex(Attributes input)
     float3 eyeDirection = toEye / eyeDistance;
     positionWS += eyeDirection * depthBias;
 
-    float width = baseWidth;
+    float width = kind > KIND_BILLBOARD ? baseWidth * abs(UNITY_MATRIX_P._m11) / (2.0 * eyeDistance) : baseWidth;
 #ifdef BUTTERFLY_INK_PASS
     float facingCosine = FacingCosine(input.facing, eyeDirection);
     float attenuation = clamp(_OutlineDistance / eyeDistance, _OutlineFloor, _OutlineCeiling);

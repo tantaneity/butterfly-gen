@@ -8,14 +8,14 @@ public static class ButterflyGeometry
     private const float BodyHeight = 0.03f;
     private const float WingRootSpacing = 0.025f;
     private const float ForeRootZ = 0.04f;
-    private const float HindRootZ = -0.01f;
+    private const float HindRootZ = 0.02f;
     private const float ThoraxZ = 0.02f;
     private const float ThoraxRadius = 0.055f;
     private const float HeadZ = 0.1f;
     private const float HeadRadius = 0.036f;
     private const float AbdomenStartZ = -0.03f;
     private const float AbdomenLength = 0.3f;
-    private const float AbdomenHalfWidth = 0.028f;
+    private const float AbdomenHalfWidth = 0.04f;
     private const int AbdomenSteps = 6;
     private const float AntennaSpread = 24.0f;
     private const float AntennaBend = 0.06f;
@@ -110,7 +110,7 @@ public static class ButterflyGeometry
             abdomen[i] = new Vector3(0.0f, BodyHeight, AbdomenStartZ - AbdomenLength * i / AbdomenSteps);
         }
 
-        Strokes.AddRibbon(mesh, abdomen, settings.body, AbdomenHalfWidth, Outline.Silhouette, BodyDepthBias);
+        Strokes.AddRibbon(mesh, abdomen, settings.body, AbdomenHalfWidth, Outline.Silhouette, BodyDepthBias, StrokeKind.Limb);
         Strokes.AddDisc(mesh, abdomen[AbdomenSteps], AbdomenHalfWidth, settings.body, Outline.Silhouette);
         Strokes.AddDisc(mesh, new Vector3(0.0f, BodyHeight, ThoraxZ), ThoraxRadius, settings.body, Outline.Silhouette);
 
@@ -133,7 +133,7 @@ public static class ButterflyGeometry
             points[i] = head + reach * along + Vector3.up * (AntennaBend * Mathf.Sin(Mathf.PI * along * 0.5f));
         }
 
-        Strokes.AddRibbon(mesh, points, settings.body, AntennaHalfWidth, Outline.Contour, BodyDepthBias);
+        Strokes.AddRibbon(mesh, points, settings.body, AntennaHalfWidth, Outline.Contour, BodyDepthBias, StrokeKind.Limb);
         Strokes.AddDisc(mesh, points[AntennaSteps], AntennaClubRadius, settings.body, Outline.Contour);
     }
 }

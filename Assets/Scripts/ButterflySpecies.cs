@@ -192,7 +192,7 @@ public static class ButterflySpecies
         zebra.fore.stripeWidth = 0.42f;
         zebra.fore.stripeStart = 0.12f;
         zebra.fore.stripeEnd = 0.88f;
-        zebra.hind.startAngle = 108.0f;
+        zebra.hind.startAngle = 100.0f;
         zebra.hind.endAngle = 162.0f;
         zebra.hind.length = 0.4f;
         zebra.hind.bandCenter = 0.55f;

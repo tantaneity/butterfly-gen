@@ -49,7 +49,7 @@ public sealed class WingSettings
         const int cells = 7;
         return new WingSettings
         {
-            startAngle = 104.0f, endAngle = 176.0f, length = 0.47f,
+            startAngle = 96.0f, endAngle = 176.0f, length = 0.47f,
             radii = new[] { 0.78f, 0.92f, 1.0f, 1.0f, 0.94f, 0.82f, 0.6f },
             veinCount = cells, eyeCells = new float[cells]
         };

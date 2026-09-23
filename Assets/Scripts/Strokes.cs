@@ -7,7 +7,7 @@ public static class Strokes
     private const float FullTurn = 2.0f * Mathf.PI;
 
     public static void AddRibbon(MeshBuffer mesh, IReadOnlyList<Vector3> points, Color fill, float halfWidth,
-        float outlineWeight, float depthBias)
+        float outlineWeight, float depthBias, StrokeKind kind = StrokeKind.Stem)
     {
         int first = mesh.VertexCount;
 
@@ -18,9 +18,9 @@ public static class Strokes
             Vector3 tangent = Vector3.Normalize(ahead - behind);
 
             mesh.AddVertex(points[i], Vector3.zero, new Vector4(tangent.x, tangent.y, tangent.z, -1.0f), fill,
-                StrokeKind.Stem, halfWidth, outlineWeight, depthBias, Shading.Flat);
+                kind, halfWidth, outlineWeight, depthBias, Shading.Flat);
             mesh.AddVertex(points[i], Vector3.zero, new Vector4(tangent.x, tangent.y, tangent.z, 1.0f), fill,
-                StrokeKind.Stem, halfWidth, outlineWeight, depthBias, Shading.Flat);
+                kind, halfWidth, outlineWeight, depthBias, Shading.Flat);
 
             if (i > 0)
             {
