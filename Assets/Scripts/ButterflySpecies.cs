@@ -116,7 +116,7 @@ public static class ButterflySpecies
         peacock.fore.eyeStretch = 1.35f;
         peacock.fore.eyeShift = 0.22f;
         peacock.fore.eyeShiftAngle = 200.0f;
-        peacock.fore.eyeRoughness = 0.08f;
+        peacock.fore.eyeRoughness = 0.14f;
         peacock.fore.scallopDepth = 0.05f;
         peacock.hind.basalReach = 0.35f;
         peacock.hind.marginWidth = 0.08f;
@@ -126,7 +126,7 @@ public static class ButterflySpecies
         peacock.hind.eyeStretch = 1.1f;
         peacock.hind.eyeShift = 0.15f;
         peacock.hind.eyeShiftAngle = 20.0f;
-        peacock.hind.eyeRoughness = 0.08f;
+        peacock.hind.eyeRoughness = 0.12f;
         peacock.hind.scallopDepth = 0.08f;
         return peacock;
     }
