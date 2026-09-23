@@ -44,6 +44,14 @@ public sealed class ButterflyBuilder : MonoBehaviour
 
     private static float Side(int wing) => wing % 2 == 0 ? 1.0f : -1.0f;
 
+    public void SetAtlasResolution(int resolution)
+    {
+        EnsureParts();
+        DestroyImmediate(fullPattern);
+        fullPattern = WingPainter.CreateAtlas(resolution);
+        Rebuild();
+    }
+
     public void Rebuild(bool isDraft = false)
     {
         EnsureParts();
