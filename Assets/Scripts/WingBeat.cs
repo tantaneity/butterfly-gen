@@ -17,6 +17,11 @@ public static class WingBeat
         return Lift(phase - HindLag);
     }
 
+    public static float Depth(float phase)
+    {
+        return Mathf.InverseLerp(TopLift, BottomLift, Lift(phase));
+    }
+
     private static float Lift(float phase)
     {
         float cycle = Mathf.Repeat(phase, 1.0f);
