@@ -9,19 +9,32 @@ public static class ButterflyGeometry
     private const float WingRootSpacing = 0.025f;
     private const float ForeRootZ = 0.04f;
     private const float HindRootZ = 0.02f;
-    private const float ThoraxZ = 0.02f;
-    private const float ThoraxRadius = 0.055f;
+    private const float ThoraxFrontZ = 0.08f;
+    private const float ThoraxBackZ = -0.07f;
+    private const float ThoraxHalfWidth = 0.05f;
+    private const float ThoraxRoundness = 0.45f;
+    private const int ThoraxSteps = 12;
     private const float HeadZ = 0.1f;
-    private const float HeadRadius = 0.036f;
-    private const float AbdomenStartZ = -0.03f;
+    private const float HeadRadius = 0.032f;
+    private const float AbdomenStartZ = -0.02f;
     private const float AbdomenLength = 0.3f;
-    private const float AbdomenHalfWidth = 0.04f;
-    private const int AbdomenSteps = 6;
+    private const float AbdomenHalfWidth = 0.042f;
+    private const int AbdomenSteps = 40;
+    private const float AbdomenTaperStart = 0.3f;
+    private const float AbdomenTaperPower = 0.75f;
+    private const int AbdomenSegments = 7;
+    private const float SegmentBulge = 0.07f;
+    private const float AbdomenDroop = 0.025f;
+    private const float MinBodyHalfWidth = 0.01f;
+    private const float AbdomenTipHalfWidth = 0.004f;
     private const float AntennaSpread = 24.0f;
     private const float AntennaBend = 0.06f;
-    private const int AntennaSteps = 8;
-    private const float AntennaHalfWidth = 0.004f;
-    private const float AntennaClubRadius = 0.014f;
+    private const float AntennaSplay = 0.7f;
+    private const int AntennaSteps = 24;
+    private const float AntennaHalfWidth = 0.0035f;
+    private const float AntennaClubHalfWidth = 0.011f;
+    private const float AntennaClubStart = 0.78f;
+    private const float AntennaClubRoundness = 0.6f;
     private const float BodyDepthBias = 0.002f;
 
     private static readonly Color Ink = ButterflySettings.Hex(0x2a2420);
@@ -105,14 +118,26 @@ public static class ButterflyGeometry
     private static void AddBody(MeshBuffer mesh, ButterflySettings settings)
     {
         Vector3[] abdomen = new Vector3[AbdomenSteps + 1];
+        float[] abdomenWidths = new float[AbdomenSteps + 1];
         for (int i = 0; i <= AbdomenSteps; i++)
         {
-            abdomen[i] = new Vector3(0.0f, BodyHeight, AbdomenStartZ - AbdomenLength * i / AbdomenSteps);
+            float along = i / (float)AbdomenSteps;
+            abdomen[i] = new Vector3(0.0f, BodyHeight - AbdomenDroop * along * along, AbdomenStartZ - AbdomenLength * along);
+            abdomenWidths[i] = AbdomenHalfWidth * AbdomenProfile(along);
         }
 
-        Strokes.AddRibbon(mesh, abdomen, settings.body, AbdomenHalfWidth, Outline.Silhouette, BodyDepthBias, StrokeKind.Limb);
-        Strokes.AddDisc(mesh, abdomen[AbdomenSteps], AbdomenHalfWidth, settings.body, Outline.Silhouette);
-        Strokes.AddDisc(mesh, new Vector3(0.0f, BodyHeight, ThoraxZ), ThoraxRadius, settings.body, Outline.Silhouette);
+        Strokes.AddRibbon(mesh, abdomen, settings.body, abdomenWidths, Outline.Silhouette, BodyDepthBias, StrokeKind.Limb);
+
+        Vector3[] thorax = new Vector3[ThoraxSteps + 1];
+        float[] thoraxWidths = new float[ThoraxSteps + 1];
+        for (int i = 0; i <= ThoraxSteps; i++)
+        {
+            float along = i / (float)ThoraxSteps;
+            thorax[i] = new Vector3(0.0f, BodyHeight, Mathf.Lerp(ThoraxFrontZ, ThoraxBackZ, along));
+            thoraxWidths[i] = Mathf.Max(MinBodyHalfWidth, ThoraxHalfWidth * Dome(along, ThoraxRoundness));
+        }
+
+        Strokes.AddRibbon(mesh, thorax, settings.body, thoraxWidths, Outline.Silhouette, BodyDepthBias, StrokeKind.Limb);
 
         Vector3 head = new Vector3(0.0f, BodyHeight, HeadZ);
         Strokes.AddDisc(mesh, head, HeadRadius, settings.body, Outline.Silhouette);
@@ -123,17 +148,38 @@ public static class ButterflyGeometry
         }
     }
 
+    private static float AbdomenProfile(float along)
+    {
+        float taper = Dome(Mathf.Lerp(AbdomenTaperStart, 1.0f, along), AbdomenTaperPower);
+        float segment = 1.0f + SegmentBulge * Mathf.Abs(Mathf.Sin(Mathf.PI * along * AbdomenSegments));
+        return Mathf.Max(AbdomenTipHalfWidth / AbdomenHalfWidth, taper * Mathf.Lerp(segment, 1.0f, along * along));
+    }
+
     private static void AddAntenna(MeshBuffer mesh, Vector3 head, float side, ButterflySettings settings)
     {
-        Vector3 reach = Quaternion.AngleAxis(side * AntennaSpread, Vector3.up) * Vector3.forward * settings.antennaLength;
         Vector3[] points = new Vector3[AntennaSteps + 1];
+        float[] halfWidths = new float[AntennaSteps + 1];
+        Vector3 flat = head;
+        float stepLength = settings.antennaLength / AntennaSteps;
         for (int i = 0; i <= AntennaSteps; i++)
         {
             float along = i / (float)AntennaSteps;
-            points[i] = head + reach * along + Vector3.up * (AntennaBend * Mathf.Sin(Mathf.PI * along * 0.5f));
+            points[i] = flat + Vector3.up * (AntennaBend * Mathf.Sin(Mathf.PI * along * 0.5f));
+            halfWidths[i] = AntennaHalfWidth + (AntennaClubHalfWidth - AntennaHalfWidth) * ClubProfile(along);
+            float angle = side * AntennaSpread * (1.0f + AntennaSplay * along * along);
+            flat += Quaternion.AngleAxis(angle, Vector3.up) * Vector3.forward * stepLength;
         }
 
-        Strokes.AddRibbon(mesh, points, settings.body, AntennaHalfWidth, Outline.Contour, BodyDepthBias, StrokeKind.Limb);
-        Strokes.AddDisc(mesh, points[AntennaSteps], AntennaClubRadius, settings.body, Outline.Contour);
+        Strokes.AddRibbon(mesh, points, settings.body, halfWidths, Outline.Contour, BodyDepthBias, StrokeKind.Limb);
+    }
+
+    private static float ClubProfile(float along)
+    {
+        return Dome(Mathf.InverseLerp(AntennaClubStart, 1.0f, along), AntennaClubRoundness);
+    }
+
+    private static float Dome(float phase, float power)
+    {
+        return Mathf.Pow(Mathf.Max(0.0f, Mathf.Sin(Mathf.PI * phase)), power);
     }
 }
