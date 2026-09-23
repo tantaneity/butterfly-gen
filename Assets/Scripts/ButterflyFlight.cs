@@ -14,6 +14,16 @@ public sealed class ButterflyFlight : MonoBehaviour
     private const float MaxBank = 35.0f;
     private const float MaxPitch = 30.0f;
     private const float MinHeadingSpeed = 1e-3f;
+    private const float MinAmplitude = 0.72f;
+    private const float MaxAmplitude = 1.05f;
+    private const float RateJitter = 0.18f;
+    private const float GlideChance = 0.14f;
+    private const float MinGlideSeconds = 0.35f;
+    private const float MaxGlideSeconds = 1.1f;
+    private const float GlideLift = 12.0f;
+    private const float GlideSink = 0.35f;
+    private const float FlapBlendSharpness = 7.0f;
+    private const int SeedScale = 7919;
 
     public float seed;
     public float speed = 1.3f;
@@ -30,6 +40,11 @@ public sealed class ButterflyFlight : MonoBehaviour
     private float beatPhase;
     private float elapsed;
     private bool isLaunched;
+    private float beatAmplitude = 1.0f;
+    private float beatRate = 1.0f;
+    private float glideSecondsLeft;
+    private float flapWeight = 1.0f;
+    private System.Random random;
     private ButterflyBuilder builder;
 
     private void Update()
@@ -45,6 +60,7 @@ public sealed class ButterflyFlight : MonoBehaviour
         heading = transform.eulerAngles.y;
         beatPhase = Mathf.Repeat(seed * SeedSpread, 1.0f);
         elapsed = 0.0f;
+        random = new System.Random(Mathf.RoundToInt(seed * SeedScale));
         isLaunched = true;
     }
 
@@ -56,14 +72,38 @@ public sealed class ButterflyFlight : MonoBehaviour
         }
 
         elapsed += deltaTime;
-        Vector3 desired = CurlField.Sample(FieldPoint()) * speed + Containment();
+        AdvanceBeat(deltaTime);
+        Vector3 desired = CurlField.Sample(FieldPoint()) * speed + Containment() + Vector3.down * (GlideSink * (1.0f - flapWeight));
         velocity = Vector3.Lerp(velocity, desired, 1.0f - Mathf.Exp(-deltaTime * Steering));
         flightPosition += velocity * deltaTime;
 
-        beatPhase = Mathf.Repeat(beatPhase + deltaTime * beatsPerSecond, 1.0f);
-        builder.Pose(WingBeat.ForeLift(beatPhase), WingBeat.HindLift(beatPhase));
+        float strength = beatAmplitude * flapWeight;
+        builder.Pose(Mathf.LerpUnclamped(GlideLift, WingBeat.ForeLift(beatPhase), strength),
+            Mathf.LerpUnclamped(GlideLift, WingBeat.HindLift(beatPhase), strength));
 
-        transform.SetPositionAndRotation(flightPosition + Vector3.up * (bobHeight * WingBeat.Depth(beatPhase)), Orient(deltaTime));
+        float bob = bobHeight * strength * WingBeat.Depth(beatPhase);
+        transform.SetPositionAndRotation(flightPosition + Vector3.up * bob, Orient(deltaTime));
+    }
+
+    private void AdvanceBeat(float deltaTime)
+    {
+        glideSecondsLeft = Mathf.Max(0.0f, glideSecondsLeft - deltaTime);
+        float targetWeight = glideSecondsLeft > 0.0f ? 0.0f : 1.0f;
+        flapWeight = Mathf.Lerp(flapWeight, targetWeight, 1.0f - Mathf.Exp(-deltaTime * FlapBlendSharpness));
+
+        float next = beatPhase + deltaTime * beatsPerSecond * beatRate;
+        beatPhase = Mathf.Repeat(next, 1.0f);
+        if (next < 1.0f)
+        {
+            return;
+        }
+
+        beatAmplitude = Mathf.Lerp(MinAmplitude, MaxAmplitude, (float)random.NextDouble());
+        beatRate = 1.0f + RateJitter * ((float)random.NextDouble() * 2.0f - 1.0f);
+        if (glideSecondsLeft <= 0.0f && random.NextDouble() < GlideChance)
+        {
+            glideSecondsLeft = Mathf.Lerp(MinGlideSeconds, MaxGlideSeconds, (float)random.NextDouble());
+        }
     }
 
     private Vector3 FieldPoint()
