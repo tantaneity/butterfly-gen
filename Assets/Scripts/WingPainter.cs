@@ -8,9 +8,9 @@ public readonly struct WingFrame
 
     private readonly Vector2 corner;
     private readonly float side;
-    private readonly float atlasOffset;
+    private readonly Vector2 atlasOffset;
 
-    public WingFrame(WingShape shape, float atlasOffset)
+    public WingFrame(WingShape shape, Vector2 atlasOffset)
     {
         Vector2 min = Vector2.zero;
         Vector2 max = Vector2.zero;
@@ -31,7 +31,7 @@ public readonly struct WingFrame
     public Vector2 AtlasUv(Vector2 point)
     {
         Vector2 local = (point - corner) / side;
-        return new Vector2(atlasOffset + local.x * WingPainter.HalfShare, local.y);
+        return atlasOffset + local * WingPainter.HalfShare;
     }
 
     public Vector2 PointAt(float u, float v)
@@ -46,12 +46,17 @@ public static class WingPainter
     public const int Resolution = 1024;
     public const int DraftResolution = 256;
 
-    public static WingFrame ForeFrame(WingShape shape) => new WingFrame(shape, 0.0f);
-    public static WingFrame HindFrame(WingShape shape) => new WingFrame(shape, HalfShare);
+    public const float LeftSeedOffset = 0.37f;
+    private const int QuadrantCount = 4;
+
+    public static WingFrame Frame(WingShape shape, bool isFore, bool isLeft)
+    {
+        return new WingFrame(shape, new Vector2(isFore ? 0.0f : HalfShare, isLeft ? HalfShare : 0.0f));
+    }
 
     public static Texture2D CreateAtlas(int resolution = Resolution)
     {
-        return new Texture2D(resolution * 2, resolution, TextureFormat.RGBA32, true)
+        return new Texture2D(resolution * 2, resolution * 2, TextureFormat.RGBA32, true)
         {
             name = "WingPattern",
             hideFlags = HideFlags.DontSave,
@@ -64,26 +69,34 @@ public static class WingPainter
     public static void Paint(Texture2D atlas, ButterflySettings settings)
     {
         Color32[] pixels = new Color32[atlas.width * atlas.height];
+        int resolution = atlas.height / 2;
         WingShape fore = new WingShape(settings.fore);
         WingShape hind = new WingShape(settings.hind);
-        int resolution = atlas.height;
-        PaintHalf(pixels, resolution, 0, new WingPattern(fore, settings.fore, settings), ForeFrame(fore));
-        PaintHalf(pixels, resolution, resolution, new WingPattern(hind, settings.hind, settings), HindFrame(hind));
+        Parallel.For(0, QuadrantCount, quadrant =>
+        {
+            bool isFore = quadrant < QuadrantCount / 2;
+            bool isLeft = quadrant % 2 == 1;
+            WingShape shape = isFore ? fore : hind;
+            float seed = settings.seed + (isLeft ? LeftSeedOffset : 0.0f);
+            WingPattern pattern = new WingPattern(shape, isFore ? settings.fore : settings.hind, settings, seed);
+            PaintQuadrant(pixels, resolution, isFore ? 0 : resolution, isLeft ? resolution : 0, pattern, Frame(shape, isFore, isLeft));
+        });
         atlas.SetPixels32(pixels);
         atlas.Apply(true);
     }
 
-    private static void PaintHalf(Color32[] pixels, int resolution, int columnOffset, WingPattern pattern, WingFrame frame)
+    private static void PaintQuadrant(Color32[] pixels, int resolution, int columnOffset, int rowOffset, WingPattern pattern, WingFrame frame)
     {
         float pixel = frame.Side / resolution;
         int stride = resolution * 2;
         Parallel.For(0, resolution, row =>
         {
             float v = (row + 0.5f) / resolution;
+            int rowStart = (rowOffset + row) * stride + columnOffset;
             for (int column = 0; column < resolution; column++)
             {
                 Vector2 point = frame.PointAt((column + 0.5f) / resolution, v);
-                pixels[row * stride + columnOffset + column] = pattern.ColourAt(point, pixel);
+                pixels[rowStart + column] = pattern.ColourAt(point, pixel);
             }
         });
     }

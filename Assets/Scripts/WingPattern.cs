@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 
 public sealed class WingPattern
@@ -11,6 +12,28 @@ public sealed class WingPattern
     private const float VeinBaseThickening = 0.8f;
     private const float StripeFade = 0.04f;
     private const float VeinRootReach = 0.08f;
+
+    private const float PatternWarpAmount = 0.011f;
+    private const float PatternWarpFrequency = 3.0f;
+    private const float VeinWarpAmount = 0.004f;
+    private const float VeinWarpFrequency = 2.0f;
+    private const float DetailWarpShare = 0.3f;
+    private const float DetailWarpFrequency = 2.7f;
+    private const float ToneDepth = 0.09f;
+    private const float ToneFrequency = 2.2f;
+    private const float GrainDepth = 0.1f;
+    private const float SpotJitter = 0.35f;
+    private const float SpotJitterStep = 1.7f;
+    private const float GrainAcross = 700.0f;
+    private const float GrainAlong = 45.0f;
+    private const float VeinShadowWidth = 5.0f;
+    private const float VeinShadowDepth = 0.14f;
+    private const float EdgeShadowStart = 0.72f;
+    private const float EdgeShadowDepth = 0.12f;
+    private const float SeedSpread = 53.0f;
+
+    private static readonly float2 SecondAxis = new float2(19.7f, -7.3f);
+    private static readonly float2 GrainOffset = new float2(-41.1f, 13.9f);
 
     private readonly struct Eye
     {
@@ -30,14 +53,16 @@ public sealed class WingPattern
     private readonly float[] veinStarts;
     private readonly float[] veinEnds;
     private readonly Vector2[] marginSpots;
-    private readonly float marginSpotRadius;
+    private readonly float[] marginSpotRadii;
     private readonly Eye[] eyes;
+    private readonly float2 seedOffset;
 
-    public WingPattern(WingShape shape, WingSettings wing, ButterflySettings palette)
+    public WingPattern(WingShape shape, WingSettings wing, ButterflySettings palette, float seed)
     {
         this.shape = shape;
         this.wing = wing;
         this.palette = palette;
+        seedOffset = new float2(seed * SeedSpread, seed * SeedSpread * 0.61f);
 
         veinStarts = new float[shape.CellCount + 1];
         veinEnds = new float[shape.CellCount + 1];
@@ -47,14 +72,39 @@ public sealed class WingPattern
             veinEnds[vein] = shape.VeinT(vein, 1.0f);
         }
 
-        marginSpotRadius = wing.marginSpotSize * shape.Length;
+        float marginSpotRadius = wing.marginSpotSize * shape.Length;
         marginSpots = marginSpotRadius > 0.0f && wing.marginWidth > 0.0f ? CellCentres(1.0f - wing.marginWidth * 0.5f) : new Vector2[0];
+        marginSpotRadii = new float[marginSpots.Length];
+        for (int spot = 0; spot < marginSpots.Length; spot++)
+        {
+            float jitter = noise.snoise(new float2(spot * SpotJitterStep, 0.0f) + seedOffset);
+            marginSpotRadii[spot] = marginSpotRadius * (1.0f + SpotJitter * jitter);
+        }
         eyes = PlaceEyes();
     }
 
     public Color ColourAt(Vector2 point, float pixel)
     {
-        shape.ToPolar(point, out float t, out float s, out float radius);
+        Vector2 warped = point + Warp(point, PatternWarpAmount, PatternWarpFrequency);
+        shape.ToPolar(warped, out float t, out float s, out float radius);
+        shape.ToPolar(point + Warp(point, VeinWarpAmount, VeinWarpFrequency), out float veinT, out float veinS, out float veinRadius);
+
+        Color colour = Layers(warped, t, s, radius, pixel);
+        colour = Color.Lerp(colour, palette.vein, VeinMask(veinT, veinS, veinRadius, pixel, 1.0f));
+        return Weather(colour, point, veinT, veinS, veinRadius, pixel);
+    }
+
+    private Vector2 Warp(Vector2 point, float amount, float frequency)
+    {
+        float2 coarse = (float2)point * (frequency / shape.Length) + seedOffset;
+        float2 fine = coarse * DetailWarpFrequency;
+        float x = noise.snoise(coarse) + DetailWarpShare * noise.snoise(fine);
+        float y = noise.snoise(coarse + SecondAxis) + DetailWarpShare * noise.snoise(fine + SecondAxis);
+        return new Vector2(x, y) * (amount * shape.Length);
+    }
+
+    private Color Layers(Vector2 point, float t, float s, float radius, float pixel)
+    {
         float pixelS = pixel / radius;
 
         Color colour = Color.Lerp(palette.ground, palette.basal, 1.0f - Mathf.SmoothStep(0.0f, 1.0f,
@@ -68,8 +118,18 @@ public sealed class WingPattern
         float marginWidth = wing.marginWidth + apex;
         colour = Color.Lerp(colour, palette.margin, marginWidth > 0.0f ? Within(1.0f - s, marginWidth, pixelS) : 0.0f);
         colour = Color.Lerp(colour, palette.marginSpot, MarginSpotMask(point, pixel));
-        colour = PaintEyes(colour, point, pixel);
-        return Color.Lerp(colour, palette.vein, VeinMask(t, s, radius, pixel));
+        return PaintEyes(colour, point, pixel);
+    }
+
+    private Color Weather(Color colour, Vector2 point, float t, float s, float radius, float pixel)
+    {
+        float2 toneAt = (float2)point * (ToneFrequency / shape.Length) + seedOffset + GrainOffset;
+        float tone = 1.0f + ToneDepth * noise.snoise(toneAt);
+        float grain = 1.0f + GrainDepth * noise.snoise(new float2(t * GrainAcross, s * GrainAlong) + seedOffset);
+        float veinShadow = 1.0f - VeinShadowDepth * VeinMask(t, s, radius, pixel, VeinShadowWidth);
+        float edgeShadow = 1.0f - EdgeShadowDepth * Mathf.SmoothStep(0.0f, 1.0f, Mathf.InverseLerp(EdgeShadowStart, 1.0f, s));
+        float shade = tone * grain * veinShadow * edgeShadow;
+        return new Color(colour.r * shade, colour.g * shade, colour.b * shade, colour.a);
     }
 
     private Vector2[] CellCentres(float reach)
@@ -126,9 +186,9 @@ public sealed class WingPattern
     private float MarginSpotMask(Vector2 point, float pixel)
     {
         float mask = 0.0f;
-        foreach (Vector2 centre in marginSpots)
+        for (int spot = 0; spot < marginSpots.Length; spot++)
         {
-            mask = Mathf.Max(mask, Within(Vector2.Distance(point, centre), marginSpotRadius, pixel));
+            mask = Mathf.Max(mask, Within(Vector2.Distance(point, marginSpots[spot]), marginSpotRadii[spot], pixel));
         }
 
         return mask;
@@ -153,14 +213,14 @@ public sealed class WingPattern
         return colour;
     }
 
-    private float VeinMask(float t, float s, float radius, float pixel)
+    private float VeinMask(float t, float s, float radius, float pixel, float widthScale)
     {
         if (s < VeinRootReach)
         {
             return 0.0f;
         }
 
-        float halfWidth = wing.veinWidth * shape.Length * (1.0f + VeinBaseThickening * (1.0f - s));
+        float halfWidth = widthScale * wing.veinWidth * shape.Length * (1.0f + VeinBaseThickening * (1.0f - s));
         float arcPerT = shape.SpanRadians * s * radius;
         int lastVein = shape.CellCount - 1;
         float nearest;

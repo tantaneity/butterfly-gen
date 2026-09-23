@@ -6,6 +6,7 @@
 #define KIND_CARD 0.5
 #define KIND_STEM 1.5
 #define KIND_BILLBOARD 2.5
+#define WOBBLE_FREQUENCY 11.0
 #define PROBE_STEP 0.002
 #define EDGE_ON_FLOOR 0.22
 #define EDGE_ON_RANGE 0.45
@@ -65,8 +66,11 @@ float2 ScreenDirection(float3 positionWS, float3 directionWS, float4 clip)
 
 float StrokeWobble(float3 positionOS)
 {
-    float noise = frac(sin(dot(positionOS, float3(12.9898, 78.233, 37.719))) * 43758.5453);
-    return 1.0 + (noise - 0.5) * _OutlineWobble;
+    float3 p = positionOS * WOBBLE_FREQUENCY;
+    float wave = sin(p.x * 1.0 + p.z * 1.7 + 0.3) * 0.5
+               + sin(p.x * 2.9 - p.y * 2.3 + p.z * 1.1 + 1.9) * 0.3
+               + sin(-p.x * 5.3 + p.z * 4.7 + 4.1) * 0.2;
+    return 1.0 + wave * _OutlineWobble;
 }
 
 float FacingCosine(float3 facingOS, float3 eyeDirection)

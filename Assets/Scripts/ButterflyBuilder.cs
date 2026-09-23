@@ -54,7 +54,7 @@ public sealed class ButterflyBuilder : MonoBehaviour
         {
             bool isFore = IsFore(wing);
             WingShape shape = isFore ? fore : hind;
-            WingFrame frame = isFore ? WingPainter.ForeFrame(shape) : WingPainter.HindFrame(shape);
+            WingFrame frame = WingPainter.Frame(shape, isFore, Side(wing) < 0.0f);
             MeshBuffer buffer = new MeshBuffer();
             ButterflyGeometry.BuildWing(buffer, shape, frame, Side(wing), isFore, settings.ground);
             buffer.WriteTo(wingMeshes[wing]);

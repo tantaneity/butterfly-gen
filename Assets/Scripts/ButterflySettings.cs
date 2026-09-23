@@ -20,6 +20,7 @@ public sealed class ButterflySettings
     public Color vein = Hex(0x2a2420);
     public Color body = Hex(0x2a2420);
 
+    public float seed;
     public float wingLift = 8.0f;
     public float antennaLength = 0.34f;
 

@@ -35,7 +35,7 @@ Material:
     - _OutlineCeiling: 1.22
     - _OutlineDistance: 3.9
     - _OutlineFloor: 0.66
-    - _OutlineWobble: 0.22
+    - _OutlineWobble: 0
     - _ShadeSoftness: 0.07
     - _ShadeStrength: 1
     - _ShadeThreshold: 0.12
