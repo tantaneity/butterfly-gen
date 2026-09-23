@@ -48,13 +48,12 @@ public sealed class ButterflyBuilder : MonoBehaviour
     {
         EnsureParts();
 
-        WingShape fore = new WingShape(settings.fore);
-        WingShape hind = new WingShape(settings.hind);
         for (int wing = 0; wing < WingCount; wing++)
         {
             bool isFore = IsFore(wing);
-            WingShape shape = isFore ? fore : hind;
-            WingFrame frame = WingPainter.Frame(shape, isFore, Side(wing) < 0.0f);
+            bool isLeft = Side(wing) < 0.0f;
+            WingShape shape = new WingShape(isFore ? settings.fore : settings.hind, WingPainter.Seed(settings, isLeft));
+            WingFrame frame = WingPainter.Frame(shape, isFore, isLeft);
             MeshBuffer buffer = new MeshBuffer();
             ButterflyGeometry.BuildWing(buffer, shape, frame, Side(wing), isFore, settings.ground);
             buffer.WriteTo(wingMeshes[wing]);

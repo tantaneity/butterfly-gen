@@ -49,6 +49,11 @@ public static class WingPainter
     public const float LeftSeedOffset = 0.37f;
     private const int QuadrantCount = 4;
 
+    public static float Seed(ButterflySettings settings, bool isLeft)
+    {
+        return settings.seed + (isLeft ? LeftSeedOffset : 0.0f);
+    }
+
     public static WingFrame Frame(WingShape shape, bool isFore, bool isLeft)
     {
         return new WingFrame(shape, new Vector2(isFore ? 0.0f : HalfShare, isLeft ? HalfShare : 0.0f));
@@ -70,14 +75,12 @@ public static class WingPainter
     {
         Color32[] pixels = new Color32[atlas.width * atlas.height];
         int resolution = atlas.height / 2;
-        WingShape fore = new WingShape(settings.fore);
-        WingShape hind = new WingShape(settings.hind);
         Parallel.For(0, QuadrantCount, quadrant =>
         {
             bool isFore = quadrant < QuadrantCount / 2;
             bool isLeft = quadrant % 2 == 1;
-            WingShape shape = isFore ? fore : hind;
-            float seed = settings.seed + (isLeft ? LeftSeedOffset : 0.0f);
+            float seed = Seed(settings, isLeft);
+            WingShape shape = new WingShape(isFore ? settings.fore : settings.hind, seed);
             WingPattern pattern = new WingPattern(shape, isFore ? settings.fore : settings.hind, settings, seed);
             PaintQuadrant(pixels, resolution, isFore ? 0 : resolution, isLeft ? resolution : 0, pattern, Frame(shape, isFore, isLeft));
         });

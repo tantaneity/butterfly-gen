@@ -1,14 +1,23 @@
+using Unity.Mathematics;
 using UnityEngine;
 
 public readonly struct WingShape
 {
+    private const float EdgeJitter = 0.018f;
+    private const float EdgeFrequency = 5.0f;
+    private const float WearJitter = 0.006f;
+    private const float WearFrequency = 23.0f;
+    private const float SeedSpread = 29.0f;
+
     private readonly WingSettings settings;
     private readonly float startRadians;
     private readonly float spanRadians;
+    private readonly float seedRow;
 
-    public WingShape(WingSettings settings)
+    public WingShape(WingSettings settings, float seed = 0.0f)
     {
         this.settings = settings;
+        seedRow = seed * SeedSpread;
         startRadians = settings.startAngle * Mathf.Deg2Rad;
         spanRadians = (settings.endAngle - settings.startAngle) * Mathf.Deg2Rad;
     }
@@ -33,7 +42,7 @@ public readonly struct WingShape
         float scallop = 1.0f - settings.scallopDepth * Mathf.Sin(Mathf.PI * scallopPhase) * Mathf.Sin(Mathf.PI * scallopPhase);
         float tailOffset = (t - settings.tailPosition) / Mathf.Max(settings.tailWidth, 1e-4f);
         float tail = settings.tailLength * Mathf.Exp(-tailOffset * tailOffset);
-        return settings.length * (Profile(t) * scallop + tail);
+        return settings.length * (Profile(t) * scallop * Ragged(t) + tail);
     }
 
     public Vector2 Point(float t, float s)
@@ -75,6 +84,13 @@ public readonly struct WingShape
     public float CellMiddle(int cell, float s)
     {
         return 0.5f * (VeinT(cell, s) + VeinT(cell + 1, s));
+    }
+
+    private float Ragged(float t)
+    {
+        float edge = noise.snoise(new float2(t * EdgeFrequency, seedRow));
+        float wear = noise.snoise(new float2(t * WearFrequency, seedRow + SeedSpread));
+        return 1.0f + EdgeJitter * edge + WearJitter * wear;
     }
 
     private float Profile(float t)
