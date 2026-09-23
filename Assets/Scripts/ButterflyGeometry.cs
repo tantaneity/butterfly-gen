@@ -26,55 +26,21 @@ public static class ButterflyGeometry
 
     private static readonly Color Ink = ButterflySettings.Hex(0x2a2420);
 
-    private readonly struct WingPlacement
+    public static Vector3 Root(bool isFore, float side)
     {
-        public readonly Quaternion rotation;
-        public readonly Vector3 root;
-        public readonly float side;
-        public readonly float layer;
-
-        public WingPlacement(float side, float lift, float rootZ, float layer)
-        {
-            this.side = side;
-            this.layer = layer;
-            rotation = Quaternion.AngleAxis(side * lift, Vector3.forward);
-            root = new Vector3(side * WingRootSpacing, BodyHeight * 0.5f, rootZ);
-        }
-
-        public Vector3 Place(Vector2 point)
-        {
-            return root + rotation * new Vector3(side * point.x, layer, point.y);
-        }
-
-        public Vector3 Turn(Vector2 direction)
-        {
-            return rotation * new Vector3(side * direction.x, 0.0f, direction.y);
-        }
-
-        public Vector3 Normal => rotation * Vector3.up;
+        return new Vector3(side * WingRootSpacing, BodyHeight * 0.5f, isFore ? ForeRootZ : HindRootZ);
     }
 
-    public static void Build(MeshBuffer mesh, ButterflySettings settings)
+    public static Quaternion Hinge(float side, float lift)
+    {
+        return Quaternion.AngleAxis(side * lift, Vector3.forward);
+    }
+
+    public static void BuildWing(MeshBuffer mesh, WingShape shape, WingFrame frame, float side, bool isFore, Color fill)
     {
         mesh.SetInk(Ink);
-        WingShape fore = new WingShape(settings.fore);
-        WingShape hind = new WingShape(settings.hind);
-
-        foreach (float side in new[] { 1.0f, -1.0f })
-        {
-            AddWing(mesh, hind, WingPainter.HindFrame(hind), new WingPlacement(side, settings.wingLift, HindRootZ, -HindLayer), settings.ground);
-            AddWing(mesh, fore, WingPainter.ForeFrame(fore), new WingPlacement(side, settings.wingLift, ForeRootZ, 0.0f), settings.ground);
-        }
-
-        mesh.SetFacing(Vector3.zero);
-        AddBody(mesh, settings);
-    }
-
-    private static void AddWing(MeshBuffer mesh, WingShape shape, WingFrame frame, WingPlacement placement, Color fill)
-    {
-        int first = mesh.VertexCount;
-        Vector3 normal = placement.Normal;
-        mesh.SetFacing(normal);
+        mesh.SetFacing(Vector3.up);
+        float layer = isFore ? 0.0f : -HindLayer;
 
         for (int i = 0; i <= WingAngleSteps; i++)
         {
@@ -83,9 +49,9 @@ public static class ButterflyGeometry
             {
                 float s = j / (float)WingRadialSteps;
                 Vector2 point = shape.Point(t, s);
-                Vector3 expansion = placement.Turn(RimDirection(shape, i, j, t));
-                mesh.AddVertex(placement.Place(point), expansion, Vector4.zero, fill, StrokeKind.Card, 0.0f,
-                    Outline.Silhouette, 0.0f, Shading.Surface(normal));
+                Vector2 rim = RimDirection(shape, i, j, t);
+                mesh.AddVertex(new Vector3(side * point.x, layer, point.y), new Vector3(side * rim.x, 0.0f, rim.y), Vector4.zero, fill,
+                    StrokeKind.Card, 0.0f, Outline.Silhouette, 0.0f, Shading.Surface(Vector3.up));
                 mesh.SetPattern(frame.AtlasUv(point));
             }
         }
@@ -95,10 +61,17 @@ public static class ButterflyGeometry
         {
             for (int j = 0; j < WingRadialSteps; j++)
             {
-                int corner = first + i * columns + j;
+                int corner = i * columns + j;
                 mesh.AddQuad(corner, corner + columns, corner + columns + 1, corner + 1);
             }
         }
+    }
+
+    public static void BuildBody(MeshBuffer mesh, ButterflySettings settings)
+    {
+        mesh.SetInk(Ink);
+        mesh.SetFacing(Vector3.zero);
+        AddBody(mesh, settings);
     }
 
     private static Vector2 RimDirection(WingShape shape, int i, int j, float t)

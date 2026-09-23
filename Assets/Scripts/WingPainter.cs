@@ -44,13 +44,14 @@ public static class WingPainter
 {
     public const float HalfShare = 0.5f;
     public const int Resolution = 1024;
+    public const int DraftResolution = 256;
 
     public static WingFrame ForeFrame(WingShape shape) => new WingFrame(shape, 0.0f);
     public static WingFrame HindFrame(WingShape shape) => new WingFrame(shape, HalfShare);
 
-    public static Texture2D CreateAtlas()
+    public static Texture2D CreateAtlas(int resolution = Resolution)
     {
-        return new Texture2D(Resolution * 2, Resolution, TextureFormat.RGBA32, true)
+        return new Texture2D(resolution * 2, resolution, TextureFormat.RGBA32, true)
         {
             name = "WingPattern",
             hideFlags = HideFlags.DontSave,
@@ -65,23 +66,23 @@ public static class WingPainter
         Color32[] pixels = new Color32[atlas.width * atlas.height];
         WingShape fore = new WingShape(settings.fore);
         WingShape hind = new WingShape(settings.hind);
-        PaintHalf(pixels, 0, fore, ForeFrame(fore), settings.fore, settings);
-        PaintHalf(pixels, Resolution, hind, HindFrame(hind), settings.hind, settings);
+        int resolution = atlas.height;
+        PaintHalf(pixels, resolution, 0, new WingPattern(fore, settings.fore, settings), ForeFrame(fore));
+        PaintHalf(pixels, resolution, resolution, new WingPattern(hind, settings.hind, settings), HindFrame(hind));
         atlas.SetPixels32(pixels);
         atlas.Apply(true);
     }
 
-    private static void PaintHalf(Color32[] pixels, int columnOffset, WingShape shape, WingFrame frame, WingSettings wing, ButterflySettings palette)
+    private static void PaintHalf(Color32[] pixels, int resolution, int columnOffset, WingPattern pattern, WingFrame frame)
     {
-        WingPattern pattern = new WingPattern(shape, wing, palette);
-        float pixel = frame.Side / Resolution;
-        int stride = Resolution * 2;
-        Parallel.For(0, Resolution, row =>
+        float pixel = frame.Side / resolution;
+        int stride = resolution * 2;
+        Parallel.For(0, resolution, row =>
         {
-            float v = (row + 0.5f) / Resolution;
-            for (int column = 0; column < Resolution; column++)
+            float v = (row + 0.5f) / resolution;
+            for (int column = 0; column < resolution; column++)
             {
-                Vector2 point = frame.PointAt((column + 0.5f) / Resolution, v);
+                Vector2 point = frame.PointAt((column + 0.5f) / resolution, v);
                 pixels[row * stride + columnOffset + column] = pattern.ColourAt(point, pixel);
             }
         });
