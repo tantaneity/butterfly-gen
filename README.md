@@ -2,7 +2,7 @@
 
 Procedural butterflies in Unity. No models, no textures from disk. Wings are polar shapes grown from the body, the paint on them is computed per pixel on the CPU, and a small toon shader draws everything with a slightly wobbly ink line on top of a paper background.
 
-![peacock](media/peacock.png)
+![morpho](media/morpho.png)
 
 ## Wings
 
