@@ -17,6 +17,14 @@ public static class Strokes
     public static void AddRibbon(MeshBuffer mesh, IReadOnlyList<Vector3> points, Color fill, IReadOnlyList<float> halfWidths,
         float outlineWeight, float depthBias, StrokeKind kind = StrokeKind.Stem)
     {
+        Color[] fills = new Color[points.Count];
+        System.Array.Fill(fills, fill);
+        AddRibbon(mesh, points, fills, halfWidths, outlineWeight, depthBias, kind);
+    }
+
+    public static void AddRibbon(MeshBuffer mesh, IReadOnlyList<Vector3> points, IReadOnlyList<Color> fills, IReadOnlyList<float> halfWidths,
+        float outlineWeight, float depthBias, StrokeKind kind = StrokeKind.Stem)
+    {
         int first = mesh.VertexCount;
 
         for (int i = 0; i < points.Count; i++)
@@ -25,9 +33,9 @@ public static class Strokes
             Vector3 behind = points[Mathf.Max(i - 1, 0)];
             Vector3 tangent = Vector3.Normalize(ahead - behind);
 
-            mesh.AddVertex(points[i], Vector3.zero, new Vector4(tangent.x, tangent.y, tangent.z, -1.0f), fill,
+            mesh.AddVertex(points[i], Vector3.zero, new Vector4(tangent.x, tangent.y, tangent.z, -1.0f), fills[i],
                 kind, halfWidths[i], outlineWeight, depthBias, Shading.Flat);
-            mesh.AddVertex(points[i], Vector3.zero, new Vector4(tangent.x, tangent.y, tangent.z, 1.0f), fill,
+            mesh.AddVertex(points[i], Vector3.zero, new Vector4(tangent.x, tangent.y, tangent.z, 1.0f), fills[i],
                 kind, halfWidths[i], outlineWeight, depthBias, Shading.Flat);
 
             if (i > 0)

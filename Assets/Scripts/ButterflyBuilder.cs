@@ -69,7 +69,7 @@ public sealed class ButterflyBuilder : MonoBehaviour
         }
 
         MeshBuffer body = new MeshBuffer();
-        ButterflyGeometry.BuildBody(body, settings);
+        BodyGeometry.Build(body, settings.body, ButterflyGeometry.Ink);
         body.WriteTo(bodyMesh);
 
         Texture2D pattern = isDraft ? draftPattern : fullPattern;

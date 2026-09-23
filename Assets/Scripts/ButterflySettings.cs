@@ -6,6 +6,7 @@ public sealed class ButterflySettings
 {
     public WingSettings fore = WingSettings.Fore();
     public WingSettings hind = WingSettings.Hind();
+    public BodySettings body = new BodySettings();
 
     public Color ground = Hex(0xd9853b);
     public Color basal = Hex(0xc4702e);
@@ -19,11 +20,9 @@ public sealed class ButterflySettings
     public Color eyePupil = Hex(0xf3efe6);
     public Color eyeGlint = Hex(0xdcd2f2);
     public Color vein = Hex(0x2a2420);
-    public Color body = Hex(0x2a2420);
 
     public float seed;
     public float wingLift = 8.0f;
-    public float antennaLength = 0.34f;
 
     public static Color Hex(int hex)
     {

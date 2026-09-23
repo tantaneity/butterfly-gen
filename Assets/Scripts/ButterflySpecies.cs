@@ -61,7 +61,7 @@ public static class ButterflySpecies
             return BlendArray((float[])from, (float[])to, t);
         }
 
-        if (type == typeof(WingSettings))
+        if (type == typeof(WingSettings) || type == typeof(BodySettings))
         {
             return Blend(from, to, t, type);
         }
@@ -95,6 +95,12 @@ public static class ButterflySpecies
         monarch.hind.veinWidth = 0.013f;
         monarch.hind.marginWidth = 0.12f;
         monarch.hind.marginSpotSize = 0.012f;
+        monarch.body = new BodySettings
+        {
+            accent = ButterflySettings.Hex(0xf3efe6), bandStrength = 0.16f,
+            abdomenLength = 0.34f, abdomenWidth = 0.03f, thoraxLength = 0.14f, thoraxWidth = 0.044f,
+            headRadius = 0.03f, antennaLength = 0.36f, clubWidth = 0.009f
+        };
         return monarch;
     }
 
@@ -128,6 +134,12 @@ public static class ButterflySpecies
         peacock.hind.eyeShiftAngle = 20.0f;
         peacock.hind.eyeRoughness = 0.12f;
         peacock.hind.scallopDepth = 0.08f;
+        peacock.body = new BodySettings
+        {
+            colour = ButterflySettings.Hex(0x2e2220), accent = ButterflySettings.Hex(0x6a4032), bandStrength = 0.35f,
+            abdomenLength = 0.22f, abdomenWidth = 0.052f, thoraxLength = 0.16f, thoraxWidth = 0.06f,
+            headRadius = 0.034f, antennaLength = 0.28f, antennaSplay = 0.5f, clubWidth = 0.014f, clubStart = 0.74f
+        };
         return peacock;
     }
 
@@ -159,6 +171,12 @@ public static class ButterflySpecies
         swallowtail.hind.eyeSize = 0.08f;
         swallowtail.hind.eyeReach = 0.8f;
         swallowtail.hind.eyeCells[6] = 1.0f;
+        swallowtail.body = new BodySettings
+        {
+            colour = ButterflySettings.Hex(0x231e1a), accent = ButterflySettings.Hex(0xe8d27a), bandStrength = 0.32f,
+            abdomenLength = 0.36f, abdomenWidth = 0.04f, thoraxLength = 0.16f, thoraxWidth = 0.054f,
+            antennaLength = 0.3f, antennaSplay = 0.9f, clubWidth = 0.012f
+        };
         return swallowtail;
     }
 
@@ -182,6 +200,12 @@ public static class ButterflySpecies
         morpho.hind.marginWidth = 0.12f;
         morpho.hind.marginSpotSize = 0.01f;
         morpho.hind.scallopDepth = 0.06f;
+        morpho.body = new BodySettings
+        {
+            colour = ButterflySettings.Hex(0x3b2e28), accent = ButterflySettings.Hex(0x6a5448), bandStrength = 0.22f,
+            abdomenLength = 0.27f, abdomenWidth = 0.046f, thoraxLength = 0.18f, thoraxWidth = 0.066f,
+            headRadius = 0.034f, antennaLength = 0.38f, clubWidth = 0.008f, clubStart = 0.68f
+        };
         return morpho;
     }
 
@@ -191,8 +215,7 @@ public static class ButterflySpecies
         {
             ground = ButterflySettings.Hex(0x2a2420), basal = ButterflySettings.Hex(0x2a2420),
             band = ButterflySettings.Hex(0xefd98a), stripe = ButterflySettings.Hex(0xefd98a),
-            margin = ButterflySettings.Hex(0x2a2420), vein = ButterflySettings.Hex(0x2a2420),
-            antennaLength = 0.42f
+            margin = ButterflySettings.Hex(0x2a2420), vein = ButterflySettings.Hex(0x2a2420)
         };
         zebra.fore.startAngle = 64.0f;
         zebra.fore.endAngle = 116.0f;
@@ -207,6 +230,13 @@ public static class ButterflySpecies
         zebra.hind.bandCenter = 0.55f;
         zebra.hind.bandWidth = 0.16f;
         zebra.hind.bandTilt = 0.3f;
+        zebra.body = new BodySettings
+        {
+            colour = ButterflySettings.Hex(0x1e1a18), accent = ButterflySettings.Hex(0xefd98a), bandStrength = 0.2f,
+            abdomenLength = 0.38f, abdomenWidth = 0.026f, thoraxLength = 0.12f, thoraxWidth = 0.038f,
+            headRadius = 0.028f, antennaLength = 0.46f, antennaSpread = 20.0f, antennaSplay = 0.3f,
+            clubWidth = 0.007f, clubStart = 0.6f
+        };
         return zebra;
     }
 
@@ -217,8 +247,7 @@ public static class ButterflySpecies
             ground = ButterflySettings.Hex(0xc7dcae), basal = ButterflySettings.Hex(0xd8e8c6),
             margin = ButterflySettings.Hex(0x9aae84), vein = ButterflySettings.Hex(0xa9bf92),
             eyeOuter = ButterflySettings.Hex(0xc9a24e), eyeRing = ButterflySettings.Hex(0x6e5a6a),
-            eyeIris = ButterflySettings.Hex(0xd9c27a), eyePupil = ButterflySettings.Hex(0xe8eedc),
-            body = ButterflySettings.Hex(0xe8e2d0), antennaLength = 0.22f
+            eyeIris = ButterflySettings.Hex(0xd9c27a), eyePupil = ButterflySettings.Hex(0xe8eedc)
         };
         luna.fore.radii = new[] { 0.96f, 1.0f, 0.92f, 0.82f, 0.72f, 0.64f, 0.58f };
         luna.fore.basalReach = 0.18f;
@@ -236,6 +265,13 @@ public static class ButterflySpecies
         luna.hind.eyeSize = 0.09f;
         luna.hind.eyeReach = 0.46f;
         luna.hind.eyeCells[3] = 1.0f;
+        luna.body = new BodySettings
+        {
+            colour = ButterflySettings.Hex(0xe8e2d0), accent = ButterflySettings.Hex(0xcdbf9e), bandStrength = 0.25f,
+            abdomenLength = 0.3f, abdomenWidth = 0.062f, thoraxLength = 0.17f, thoraxWidth = 0.072f,
+            headRadius = 0.036f, antennaLength = 0.22f, antennaSpread = 30.0f, antennaSplay = 0.4f,
+            clubWidth = 0.024f, clubStart = 0.08f
+        };
         return luna;
     }
 }
