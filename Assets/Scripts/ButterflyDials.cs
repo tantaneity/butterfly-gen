@@ -26,6 +26,7 @@ public static class ButterflyDials
 
     private const float HandleRadius = 0.011f;
     private const float TrackWidth = 0.0022f;
+    private const float TrackRecess = -0.02f;
     private const float ColumnDepth = 2.0f;
     private const float ColumnLeft = 0.36f;
     private const float ColumnRight = 0.48f;
@@ -105,7 +106,7 @@ public static class ButterflyDials
 
         foreach (Dial dial in dials)
         {
-            Strokes.AddRibbon(mesh, new[] { dial.start, dial.end }, track, TrackWidth, Outline.Silhouette, 0.0f);
+            Strokes.AddRibbon(mesh, new[] { dial.start, dial.end }, track, TrackWidth, Outline.Silhouette, TrackRecess);
         }
 
         foreach (Dial dial in dials)
