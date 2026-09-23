@@ -104,20 +104,29 @@ public static class ButterflySpecies
         {
             ground = ButterflySettings.Hex(0xb5463c), basal = ButterflySettings.Hex(0x6e3a30),
             margin = ButterflySettings.Hex(0x5a3a30), vein = ButterflySettings.Hex(0x8a3d33),
-            eyeOuter = ButterflySettings.Hex(0xe8d9a8), eyeRing = ButterflySettings.Hex(0x2a2420),
-            eyeIris = ButterflySettings.Hex(0x5b7fb0), eyePupil = ButterflySettings.Hex(0x2a2420)
+            eyeOuter = ButterflySettings.Hex(0x1e1718), eyeRing = ButterflySettings.Hex(0xefe2bf),
+            eyeIris = ButterflySettings.Hex(0x6f74c8), eyePupil = ButterflySettings.Hex(0x1a1422),
+            eyeGlint = ButterflySettings.Hex(0xe0d4f5)
         };
         peacock.fore.basalReach = 0.28f;
         peacock.fore.marginWidth = 0.06f;
         peacock.fore.eyeSize = 0.2f;
         peacock.fore.eyeReach = 0.74f;
         peacock.fore.eyeCells[2] = 1.0f;
+        peacock.fore.eyeStretch = 1.35f;
+        peacock.fore.eyeShift = 0.22f;
+        peacock.fore.eyeShiftAngle = 200.0f;
+        peacock.fore.eyeRoughness = 0.08f;
         peacock.fore.scallopDepth = 0.05f;
         peacock.hind.basalReach = 0.35f;
         peacock.hind.marginWidth = 0.08f;
         peacock.hind.eyeSize = 0.3f;
         peacock.hind.eyeReach = 0.6f;
         peacock.hind.eyeCells[3] = 1.0f;
+        peacock.hind.eyeStretch = 1.1f;
+        peacock.hind.eyeShift = 0.15f;
+        peacock.hind.eyeShiftAngle = 20.0f;
+        peacock.hind.eyeRoughness = 0.08f;
         peacock.hind.scallopDepth = 0.08f;
         return peacock;
     }

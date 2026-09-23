@@ -31,6 +31,10 @@ public sealed class WingSettings
 
     public float eyeReach = 0.7f;
     public float eyeSize;
+    public float eyeStretch = 1.0f;
+    public float eyeShift = 0.12f;
+    public float eyeShiftAngle;
+    public float eyeRoughness = 0.06f;
     public float[] eyeCells;
 
     public static WingSettings Fore()

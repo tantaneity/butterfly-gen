@@ -17,6 +17,7 @@ public sealed class ButterflySettings
     public Color eyeRing = Hex(0x2a2420);
     public Color eyeIris = Hex(0x5b7fb0);
     public Color eyePupil = Hex(0xf3efe6);
+    public Color eyeGlint = Hex(0xdcd2f2);
     public Color vein = Hex(0x2a2420);
     public Color body = Hex(0x2a2420);
 
