@@ -23,6 +23,8 @@ public sealed class ButterflySettings
 
     public float seed;
     public float wingLift = 8.0f;
+    public float foreSweep = 18.0f;
+    public float hindSweep = 5.0f;
 
     public static Color Hex(int hex)
     {

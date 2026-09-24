@@ -17,9 +17,9 @@ public static class ButterflyGeometry
         return new Vector3(side * WingRootSpacing, BodyHeight * 0.5f, isFore ? ForeRootZ : HindRootZ);
     }
 
-    public static Quaternion Hinge(float side, float lift)
+    public static Quaternion Hinge(float side, float lift, float sweep)
     {
-        return Quaternion.AngleAxis(side * lift, Vector3.forward);
+        return Quaternion.AngleAxis(side * lift, Vector3.forward) * Quaternion.AngleAxis(side * sweep, Vector3.up);
     }
 
     public static void BuildWing(MeshBuffer mesh, WingShape shape, WingFrame frame, float side, bool isFore, Color fill)

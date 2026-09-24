@@ -18,6 +18,8 @@ public sealed class ButterflyBuilder : MonoBehaviour
     private Texture2D draftPattern;
     private MaterialPropertyBlock properties;
     private bool isDirty;
+    private float foreSweep;
+    private float hindSweep;
 
     private void OnEnable()
     {
@@ -76,6 +78,8 @@ public sealed class ButterflyBuilder : MonoBehaviour
         WingPainter.Paint(pattern, settings);
         properties.SetTexture(PatternProperty, pattern);
         ApplyProperties();
+        foreSweep = settings.foreSweep;
+        hindSweep = settings.hindSweep;
         Pose(settings.wingLift, settings.wingLift);
     }
 
@@ -84,7 +88,9 @@ public sealed class ButterflyBuilder : MonoBehaviour
         EnsureParts();
         for (int wing = 0; wing < WingCount; wing++)
         {
-            wings[wing].localRotation = ButterflyGeometry.Hinge(Side(wing), IsFore(wing) ? foreLift : hindLift);
+            bool isFore = IsFore(wing);
+            wings[wing].localRotation = ButterflyGeometry.Hinge(Side(wing), isFore ? foreLift : hindLift,
+                isFore ? foreSweep : hindSweep);
         }
     }
 
